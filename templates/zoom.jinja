@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="{{url_for('static', filename='favicon.ico')}}" />
+<link rel="stylesheet" href="{{url_for('static', filename='zoom.css')}}" />
+<script src="{{url_for('static', filename='zoom.js')}}"></script>
+
+<title>Deepzoom Image - {{title}}</title>
+
+<body>
+  <div id="deepzoom"></div>
+  <div id="zoom-buttons">
+    <button onclick="resetZoom()">
+      <img src="{{url_for('static', filename='reset.svg')}}" />
+    </button>
+    <button onclick="zoomIn()">
+      <img src="{{url_for('static', filename='zoom-in.svg')}}" />
+    </button>
+    <button onclick="zoomOut()">
+      <img src="{{url_for('static', filename='zoom-out.svg')}}" />
+    </button>
+  </div>
+</body>
+
+<script>init("{{uuid}}", {{ info | tojson }});</script>

@@ -1,0 +1,60 @@
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  width: 100dvw;
+  height: 100dvh;
+  background-color: black;
+  overflow: hidden;
+}
+
+button {
+  flex: 1;
+  aspect-ratio: 1;
+  border: 1.5px solid #ffffff44;
+  border-radius: 3rem;
+  cursor: pointer;
+  background-color: rgba(0, 0, 0, 0.25);
+}
+
+button img {
+  height: 2rem;
+  margin: 0.5rem;
+}
+
+button:disabled {
+  filter: opacity(33%);
+  background-color: inherit;
+  cursor: not-allowed;
+}
+
+button:enabled:active {
+  background-color: #ffffff44;
+}
+
+#deepzoom {
+  position: relative;
+  width: 100dvw;
+  height: 100dvh;
+}
+
+#zoom-buttons {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.tile {
+  position: absolute;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}

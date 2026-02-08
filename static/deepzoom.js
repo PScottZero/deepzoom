@@ -6,13 +6,11 @@ let uuid = "";
 let info = [];
 let deepzoom = undefined;
 
+let baseInfo = {};
+let levelInfo = {};
+
 let globalZoomLevel = 0;
 let maxZoomLevel = 0;
-
-let baseWidth = 0;
-let baseHeight = 0;
-let imageWidth = 0;
-let imageHeight = 0;
 
 let scale = 0;
 let imageCenterX = 0;
@@ -29,16 +27,11 @@ function init(_uuid, _info) {
   maxZoomLevel = info.length - 1;
   globalZoomLevel = maxZoomLevel;
 
-  const maxlevel = info[maxZoomLevel];
+  baseInfo = info[maxZoomLevel];
+  levelInfo = baseInfo;
 
-  baseWidth = maxlevel.width;
-  baseHeight = maxlevel.height;
-
-  imageWidth = baseWidth;
-  imageHeight = baseHeight;
-
-  imageCenterX = baseWidth / 2;
-  imageCenterY = baseHeight / 2;
+  imageCenterX = baseInfo.width / 2;
+  imageCenterY = baseInfo.height / 2;
 
   deepzoom.addEventListener("mousedown", (e) => startMove(e));
   deepzoom.addEventListener("mousemove", (e) => move(e));
@@ -50,12 +43,12 @@ function init(_uuid, _info) {
 
 function render() {
   const zoomAspectRatio = deepzoom.clientWidth / deepzoom.clientHeight;
-  const imageAspectRatio = baseWidth / baseHeight;
+  const imageAspectRatio = baseInfo.width / baseInfo.height;
 
   if (imageAspectRatio < zoomAspectRatio) {
-    scale = deepzoom.clientHeight / baseHeight;
+    scale = deepzoom.clientHeight / baseInfo.height;
   } else {
-    scale = deepzoom.clientWidth / baseWidth;
+    scale = deepzoom.clientWidth / baseInfo.width;
   }
 
   for (let level = 0; level <= maxZoomLevel; level++) {
@@ -65,45 +58,91 @@ function render() {
     }
   }
 
-  const level = info[globalZoomLevel];
-  imageWidth = level.width;
-  imageHeight = level.height;
+  levelInfo = info[globalZoomLevel];
+  levelInfo.width = levelInfo.width;
+  levelInfo.height = levelInfo.height;
 
-  for (let tileTop = 0; tileTop < imageHeight; tileTop += TILE_SIZE) {
-    for (let tileLeft = 0; tileLeft < imageWidth; tileLeft += TILE_SIZE) {
-      if (tileIsRendered(tileLeft, tileTop)) {
-        refreshTile(level, tileLeft, tileTop);
+  for (let tileTop = 0; tileTop < levelInfo.height; tileTop += TILE_SIZE) {
+    for (let tileLeft = 0; tileLeft < levelInfo.width; tileLeft += TILE_SIZE) {
+      if (tileIsVisible(tileLeft, tileTop)) {
+        renderTile(tileLeft, tileTop);
       } else {
-        renderTile(level, tileLeft, tileTop);
+        removeTile(tileLeft, tileTop);
       }
     }
   }
 }
 
-function renderTile(level, tileLeft, tileTop) {
+function tileIsVisible(tileLeft, tileTop) {
+  tileLeft -= TILE_OVERLAP;
+  tileTop -= TILE_OVERLAP;
+
+  const tileRight = tileLeft + TILE_SIZE_WITH_OVERLAP;
+  const tileBottom = tileTop + TILE_SIZE_WITH_OVERLAP;
+
+  const viewLeft = imageCenterX - deepzoom.clientWidth / (2 * scale);
+  const viewTop = imageCenterY - deepzoom.clientHeight / (2 * scale);
+  const viewRight = imageCenterX + deepzoom.clientWidth / (2 * scale);
+  const viewBottom = imageCenterY + deepzoom.clientHeight / (2 * scale);
+
+  const tileLeftIsVisible = tileLeft >= viewLeft && tileLeft <= viewRight;
+  const tileRightIsVisible = tileRight >= viewLeft && tileRight <= viewRight;
+  const tileTopIsVisible = tileTop >= viewTop && tileTop <= viewBottom;
+  const tileBottomIsVisible = tileBottom >= viewTop && tileBottom <= viewBottom;
+
+  const tileTopLeftIsVisible = tileTopIsVisible && tileLeftIsVisible;
+  const tileTopRightIsVisible = tileTopIsVisible && tileRightIsVisible;
+  const tileBottomLeftIsVisible = tileBottomIsVisible && tileLeftIsVisible;
+  const tileBottomRightIsVisible = tileBottomIsVisible && tileRightIsVisible;
+
+  return (
+    tileTopLeftIsVisible ||
+    tileTopRightIsVisible ||
+    tileBottomLeftIsVisible ||
+    tileBottomRightIsVisible
+  );
+}
+
+function renderTile(tileLeft, tileTop) {
+  const existingTile = document.getElementById(getTileId(tileLeft, tileTop));
+  if (existingTile !== null) {
+    setTilePositionAndDims(existingTile, tileLeft, tileTop);
+    return;
+  }
+
   const tile = new Image();
-  setTilePositionAndDims(level, tile, tileLeft, tileTop);
+  setTilePositionAndDims(tile, tileLeft, tileTop);
 
   tile.id = getTileId(tileLeft, tileTop);
   tile.classList.add(getLevelClass(globalZoomLevel));
   tile.classList.add("tile");
   tile.draggable = false;
 
-  tile.onload = () => deepzoom.appendChild(tile);
+  tile.onload = () => {
+    removeTile(tileLeft, tileTop);
+    deepzoom.appendChild(tile);
+  };
+
   tile.src = `/tile/${uuid}/${globalZoomLevel}/${tileLeft}_${tileTop}.jpg`;
 }
 
-function refreshTile(level, tileLeft, tileTop) {
+function removeTile(tileLeft, tileTop) {
   const tile = document.getElementById(getTileId(tileLeft, tileTop));
-  setTilePositionAndDims(level, tile, tileLeft, tileTop);
+  if (tile !== null) tile.remove();
 }
 
-function setTilePositionAndDims(level, tile, tileLeft, tileTop) {
+function setTilePositionAndDims(tile, tileLeft, tileTop) {
   tileLeft -= TILE_OVERLAP;
   tileTop -= TILE_OVERLAP;
 
-  const tileRight = Math.min(tileLeft + TILE_SIZE_WITH_OVERLAP, level.width);
-  const tileBottom = Math.min(tileTop + TILE_SIZE_WITH_OVERLAP, level.height);
+  const tileRight = Math.min(
+    tileLeft + TILE_SIZE_WITH_OVERLAP,
+    levelInfo.width,
+  );
+  const tileBottom = Math.min(
+    tileTop + TILE_SIZE_WITH_OVERLAP,
+    levelInfo.height,
+  );
 
   tileLeft = Math.max(0, tileLeft);
   tileTop = Math.max(0, tileTop);
@@ -121,8 +160,7 @@ function setTilePositionAndDims(level, tile, tileLeft, tileTop) {
 }
 
 function tileIsRendered(tileLeft, tileTop) {
-  tileId = getTileId(tileLeft, tileTop);
-  return document.getElementById(tileId) !== null;
+  return document.querySelector(`#${getTileId(tileLeft, tileTop)}`) !== null;
 }
 
 function getTileId(tileLeft, tileTop) {
@@ -135,13 +173,13 @@ function getLevelClass(zoomLevel) {
 
 function resetZoom() {
   globalZoomLevel = maxZoomLevel;
-  imageCenterX = baseWidth / 2;
-  imageCenterY = baseHeight / 2;
+  imageCenterX = baseInfo.width / 2;
+  imageCenterY = baseInfo.height / 2;
   render();
 }
 
 function zoomIn() {
-  if (globalZoomLevel > info.length - 2) {
+  if (globalZoomLevel > 0) {
     globalZoomLevel -= 1;
     imageCenterX *= 2;
     imageCenterY *= 2;
@@ -169,8 +207,11 @@ function move(e) {
     const moveX = (cursorX - e.clientX) / scale;
     const moveY = (cursorY - e.clientY) / scale;
 
-    imageCenterX = Math.min(Math.max(0, imageCenterX + moveX), imageWidth);
-    imageCenterY = Math.min(Math.max(0, imageCenterY + moveY), imageHeight);
+    imageCenterX = Math.min(Math.max(0, imageCenterX + moveX), levelInfo.width);
+    imageCenterY = Math.min(
+      Math.max(0, imageCenterY + moveY),
+      levelInfo.height,
+    );
 
     cursorX = e.clientX;
     cursorY = e.clientY;
@@ -181,4 +222,5 @@ function move(e) {
 
 function endMove() {
   moving = false;
+  render();
 }

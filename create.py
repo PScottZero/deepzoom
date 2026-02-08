@@ -23,7 +23,8 @@ PROGRESS_BAR_LEN = 40
 
 def create_deepzoom_image(image_path: str, out_path: str) -> None:
   image_folder = os.path.dirname(image_path)
-  image_name = os.path.basename(image_path).split(".")[0]
+  image_name = os.path.basename(image_path)
+  image_name = image_name[: image_name.rfind(".")]
   deepzoom_path = f"{out_path if out_path else image_folder}/{image_name}"
 
   if os.path.exists(deepzoom_path):
@@ -39,6 +40,7 @@ def create_deepzoom_image(image_path: str, out_path: str) -> None:
   info: list[dict[str, int]] = []
   resized_width = img.width
   resized_height = img.height
+
   while True:
     zoom_level_path = f"{deepzoom_path}/{len(info)}"
     os.mkdir(zoom_level_path)
@@ -48,11 +50,10 @@ def create_deepzoom_image(image_path: str, out_path: str) -> None:
     if resized_width != img.width:
       print_color("Halving image dimensions...", ANSI_CYAN)
       img = img.resize((resized_width, resized_height))
-
-    tiles = get_tiles(img.width, img.height, TILE_SIZE)
     print_color(f"Size: {img.width}x{img.height}", ANSI_CYAN)
-    print_color("Generating tiles...", ANSI_CYAN)
 
+    print_color("Generating tiles...", ANSI_CYAN)
+    tiles = get_tiles(img.width, img.height, TILE_SIZE)
     for i, (tile_left, tile_top) in enumerate(tiles):
       print_progress(i, len(tiles))
 

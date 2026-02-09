@@ -1,6 +1,7 @@
 const TILE_SIZE = 508;
 const TILE_OVERLAP = 2;
 const TILE_SIZE_WITH_OVERLAP = TILE_SIZE + 2 * TILE_OVERLAP;
+const MAX_EXTRA_ZOOM_LEVELS = 2;
 
 let uuid = "";
 let info = [];
@@ -11,6 +12,7 @@ let levelInfo = {};
 
 let globalZoomLevel = 0;
 let maxZoomLevel = 0;
+let extraZoomLevels = 0;
 
 let scale = 0;
 let imageCenterX = 0;
@@ -50,6 +52,7 @@ function render() {
   } else {
     scale = deepzoom.clientWidth / baseInfo.width;
   }
+  scale *= Math.pow(2, extraZoomLevels);
 
   for (let level = 0; level <= maxZoomLevel; level++) {
     if (level != globalZoomLevel) {
@@ -173,6 +176,7 @@ function getLevelClass(zoomLevel) {
 
 function resetZoom() {
   globalZoomLevel = maxZoomLevel;
+  extraZoomLevels = 0;
   imageCenterX = baseInfo.width / 2;
   imageCenterY = baseInfo.height / 2;
   render();
@@ -180,18 +184,29 @@ function resetZoom() {
 
 function zoomIn() {
   if (globalZoomLevel > 0) {
-    globalZoomLevel -= 1;
-    imageCenterX *= 2;
-    imageCenterY *= 2;
+    if (
+      globalZoomLevel == maxZoomLevel &&
+      extraZoomLevels < MAX_EXTRA_ZOOM_LEVELS
+    ) {
+      extraZoomLevels += 1;
+    } else {
+      globalZoomLevel -= 1;
+      imageCenterX *= 2;
+      imageCenterY *= 2;
+    }
     render();
   }
 }
 
 function zoomOut() {
   if (globalZoomLevel < maxZoomLevel) {
-    globalZoomLevel += 1;
-    imageCenterX /= 2;
-    imageCenterY /= 2;
+    if (globalZoomLevel == maxZoomLevel - 1 && extraZoomLevels > 0) {
+      extraZoomLevels -= 1;
+    } else {
+      globalZoomLevel += 1;
+      imageCenterX /= 2;
+      imageCenterY /= 2;
+    }
     render();
   }
 }

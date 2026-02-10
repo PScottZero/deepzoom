@@ -1,7 +1,7 @@
 const TILE_SIZE = 508;
 const TILE_OVERLAP = 2;
 const TILE_SIZE_WITH_OVERLAP = TILE_SIZE + 2 * TILE_OVERLAP;
-const MAX_EXTRA_ZOOM_LEVELS = 2;
+const MAX_EXTRA_ZOOM_LEVELS = 1;
 
 let uuid = "";
 let info = [];
@@ -88,22 +88,13 @@ function tileIsVisible(tileLeft, tileTop) {
   const viewRight = imageCenterX + deepzoom.clientWidth / (2 * scale);
   const viewBottom = imageCenterY + deepzoom.clientHeight / (2 * scale);
 
-  const tileLeftIsVisible = tileLeft >= viewLeft && tileLeft <= viewRight;
-  const tileRightIsVisible = tileRight >= viewLeft && tileRight <= viewRight;
-  const tileTopIsVisible = tileTop >= viewTop && tileTop <= viewBottom;
-  const tileBottomIsVisible = tileBottom >= viewTop && tileBottom <= viewBottom;
+  const outOfBounds =
+    tileRight < viewLeft ||
+    tileLeft > viewRight ||
+    tileBottom < viewTop ||
+    tileTop > viewBottom;
 
-  const tileTopLeftIsVisible = tileTopIsVisible && tileLeftIsVisible;
-  const tileTopRightIsVisible = tileTopIsVisible && tileRightIsVisible;
-  const tileBottomLeftIsVisible = tileBottomIsVisible && tileLeftIsVisible;
-  const tileBottomRightIsVisible = tileBottomIsVisible && tileRightIsVisible;
-
-  return (
-    tileTopLeftIsVisible ||
-    tileTopRightIsVisible ||
-    tileBottomLeftIsVisible ||
-    tileBottomRightIsVisible
-  );
+  return !outOfBounds;
 }
 
 function renderTile(tileLeft, tileTop) {

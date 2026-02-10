@@ -1,7 +1,7 @@
 const TILE_SIZE = 508;
 const TILE_OVERLAP = 2;
 const TILE_SIZE_WITH_OVERLAP = TILE_SIZE + 2 * TILE_OVERLAP;
-const MAX_EXTRA_ZOOM_LEVELS = 1;
+const MAX_EXTRA_ZOOM_LEVELS = 2;
 
 let uuid = "";
 let info = [];
@@ -174,30 +174,25 @@ function resetZoom() {
 }
 
 function zoomIn() {
-  if (globalZoomLevel > 0) {
-    if (
-      globalZoomLevel == maxZoomLevel &&
-      extraZoomLevels < MAX_EXTRA_ZOOM_LEVELS
-    ) {
-      extraZoomLevels += 1;
-    } else {
-      globalZoomLevel -= 1;
-      imageCenterX *= 2;
-      imageCenterY *= 2;
-    }
+  if (globalZoomLevel == 0 && extraZoomLevels < MAX_EXTRA_ZOOM_LEVELS) {
+    extraZoomLevels += 1;
+    render();
+  } else if (globalZoomLevel > 0) {
+    globalZoomLevel -= 1;
+    imageCenterX *= 2;
+    imageCenterY *= 2;
     render();
   }
 }
 
 function zoomOut() {
-  if (globalZoomLevel < maxZoomLevel) {
-    if (globalZoomLevel == maxZoomLevel - 1 && extraZoomLevels > 0) {
-      extraZoomLevels -= 1;
-    } else {
-      globalZoomLevel += 1;
-      imageCenterX /= 2;
-      imageCenterY /= 2;
-    }
+  if (extraZoomLevels > 0) {
+    extraZoomLevels -= 1;
+    render();
+  } else if (globalZoomLevel < maxZoomLevel) {
+    globalZoomLevel += 1;
+    imageCenterX /= 2;
+    imageCenterY /= 2;
     render();
   }
 }

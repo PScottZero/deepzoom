@@ -111,13 +111,12 @@ function renderTile(tileLeft, tileTop) {
   tile.classList.add(getLevelClass(globalZoomLevel));
   tile.classList.add("tile");
   tile.draggable = false;
-
-  tile.onload = () => {
-    removeTile(tileLeft, tileTop);
-    deepzoom.appendChild(tile);
-  };
-
+  tile.style.visibility = "hidden";
+  tile.onload = () => (tile.style.visibility = "visible");
   tile.src = `/tile/${uuid}/${globalZoomLevel}/${tileLeft}_${tileTop}.jpg`;
+
+  removeTile(tileLeft, tileTop);
+  deepzoom.appendChild(tile);
 }
 
 function removeTile(tileLeft, tileTop) {

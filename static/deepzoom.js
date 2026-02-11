@@ -1,7 +1,7 @@
 const TILE_SIZE = 508;
 const TILE_OVERLAP = 2;
 const TILE_SIZE_WITH_OVERLAP = TILE_SIZE + 2 * TILE_OVERLAP;
-const MAX_EXTRA_ZOOM_LEVELS = 2;
+const LEVEL_SCALE_THRESHOLD = 0.75;
 
 let uuid = "";
 let info = [];
@@ -13,6 +13,7 @@ let levelInfo = {};
 let globalZoomLevel = 0;
 let maxZoomLevel = 0;
 let extraZoomLevels = 0;
+let atLastExtraLevel = false;
 
 let scale = 0;
 let imageCenterX = 0;
@@ -40,7 +41,10 @@ function init(_uuid, _info) {
   window.addEventListener("mouseup", () => endMove());
 
   render();
-  window.addEventListener("resize", () => render());
+  window.addEventListener("resize", () => {
+    resetZoom();
+    render();
+  });
 }
 
 function render() {
@@ -173,8 +177,14 @@ function resetZoom() {
 }
 
 function zoomIn() {
-  if (globalZoomLevel == 0 && extraZoomLevels < MAX_EXTRA_ZOOM_LEVELS) {
+  const atFirstZoomLevel = globalZoomLevel === maxZoomLevel;
+  const atLastZoomLevel = globalZoomLevel === 0;
+  if (
+    (atFirstZoomLevel && scale < LEVEL_SCALE_THRESHOLD) ||
+    (atLastZoomLevel && !atLastExtraLevel)
+  ) {
     extraZoomLevels += 1;
+    if (atLastZoomLevel) atLastExtraLevel = true;
     render();
   } else if (globalZoomLevel > 0) {
     globalZoomLevel -= 1;
@@ -185,8 +195,14 @@ function zoomIn() {
 }
 
 function zoomOut() {
-  if (extraZoomLevels > 0) {
+  const atFirstZoomLevel = globalZoomLevel === maxZoomLevel;
+  const atLastZoomLevel = globalZoomLevel === 0;
+  if (
+    (atFirstZoomLevel && extraZoomLevels > 0) ||
+    (atLastZoomLevel && atLastExtraLevel)
+  ) {
     extraZoomLevels -= 1;
+    if (atLastZoomLevel) atLastExtraLevel = false;
     render();
   } else if (globalZoomLevel < maxZoomLevel) {
     globalZoomLevel += 1;

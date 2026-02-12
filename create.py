@@ -38,18 +38,18 @@ def create_deepzoom_image(image_path: str, out_path: str) -> None:
     exit(0)
 
   info: list[dict[str, int]] = []
-  resized_width = img.width
-  resized_height = img.height
 
-  while True:
-    zoom_level_path = f"{deepzoom_path}/{len(info)}"
+  zoom_levels = get_zoom_levels(img.width, img.height)
+  for i, zoom_level in enumerate(zoom_levels):
+    zoom_level_id = len(zoom_levels) - i - 1
+    zoom_level_path = f"{deepzoom_path}/{zoom_level_id}"
     os.mkdir(zoom_level_path)
 
-    print(f"Generating zoom level {len(info)}")
+    print(f"Generating zoom level {zoom_level_id}")
 
-    if resized_width != img.width:
+    if zoom_level[0] != img.width:
       print_color("Halving image dimensions...", ANSI_CYAN)
-      img = img.resize((resized_width, resized_height))
+      img = img.resize(zoom_level)
     print_color(f"Size: {img.width}x{img.height}", ANSI_CYAN)
 
     print_color("Generating tiles...", ANSI_CYAN)
@@ -74,16 +74,21 @@ def create_deepzoom_image(image_path: str, out_path: str) -> None:
 
     info.append({"width": img.width, "height": img.height})
 
-    resized_width = math.ceil(img.width / 2)
-    resized_height = math.ceil(img.height / 2)
-    if resized_width <= MIN_IMAGE_DIM and resized_height <= MIN_IMAGE_DIM:
-      break
-
   print("Writing info.json...")
-  with open(f"{deepzoom_path}/info.json", "w") as f:
-    json.dump(info, f, indent=2)
+  info_path = f"{deepzoom_path}/info.json"
+  with open(info_path, "w") as f:
+    json.dump(list(reversed(info)), f, indent=2)
 
   print_color("Done", ANSI_GREEN)
+
+
+def get_zoom_levels(width: int, height: int) -> list[tuple[int, int]]:
+  zoom_levels = []
+  while width >= MIN_IMAGE_DIM or height >= MIN_IMAGE_DIM:
+    zoom_levels.append((width, height))
+    width = math.ceil(width / 2)
+    height = math.ceil(height / 2)
+  return zoom_levels
 
 
 def get_tiles(width: int, height: int, tile_size: int) -> list[tuple[int, int]]:

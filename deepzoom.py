@@ -12,7 +12,13 @@ app = Flask(__name__)
 def deepzoom() -> str:
   with open(f"{app.config['deepzoom_path']}/info.json", "r") as info:
     info = json.loads(info.read())
-  return render_template("deepzoom.jinja", uuid=app.config["id"], info=info)
+  title = os.path.basename(app.config["deepzoom_path"])
+  return render_template(
+    "deepzoom.jinja",
+    title=title,
+    uuid=app.config["id"],
+    info=info,
+  )
 
 
 @app.route("/tile/<string:uuid>/<int:zoom_level>/<string:tile>")

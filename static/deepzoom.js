@@ -62,10 +62,9 @@ function render() {
   scale *= Math.pow(2, minZoomExtraLevels + maxZoomExtraLevels);
 
   for (let level = 0; level <= maxZoomLevel; level++) {
-    if (level != zoomLevel) {
-      const tiles = document.querySelectorAll(`.${getLevelClass(level)}`);
-      for (const tile of tiles) tile.remove();
-    }
+    if (level === zoomLevel) continue;
+    const tiles = document.querySelectorAll(`.level-${level}`);
+    for (const tile of tiles) tile.remove();
   }
 
   levelInfo = info[zoomLevel];
@@ -105,7 +104,8 @@ function tileIsVisible(tileLeft, tileTop) {
 }
 
 function renderTile(tileLeft, tileTop) {
-  const existingTile = document.getElementById(getTileId(tileLeft, tileTop));
+  const tileId = `tile-${tileLeft}-${tileTop}`;
+  const existingTile = document.querySelector(`#${tileId}`);
   if (existingTile !== null) {
     setTilePositionAndDims(existingTile, tileLeft, tileTop);
     return;
@@ -114,8 +114,8 @@ function renderTile(tileLeft, tileTop) {
   const tile = new Image();
   setTilePositionAndDims(tile, tileLeft, tileTop);
 
-  tile.id = getTileId(tileLeft, tileTop);
-  tile.classList.add(getLevelClass(zoomLevel));
+  tile.id = tileId;
+  tile.classList.add(`level-${zoomLevel}`);
   tile.classList.add("tile");
   tile.draggable = false;
   tile.style.visibility = "hidden";
@@ -124,11 +124,6 @@ function renderTile(tileLeft, tileTop) {
 
   removeTile(tileLeft, tileTop);
   deepzoom.appendChild(tile);
-}
-
-function removeTile(tileLeft, tileTop) {
-  const tile = document.getElementById(getTileId(tileLeft, tileTop));
-  if (tile !== null) tile.remove();
 }
 
 function setTilePositionAndDims(tile, tileLeft, tileTop) {
@@ -159,16 +154,9 @@ function setTilePositionAndDims(tile, tileLeft, tileTop) {
   tile.style.height = `${tileHeight * scale}px`;
 }
 
-function tileIsRendered(tileLeft, tileTop) {
-  return document.querySelector(`#${getTileId(tileLeft, tileTop)}`) !== null;
-}
-
-function getTileId(tileLeft, tileTop) {
-  return `tile-${tileLeft}-${tileTop}`;
-}
-
-function getLevelClass(level) {
-  return `level-${level}`;
+function removeTile(tileLeft, tileTop) {
+  const tile = document.querySelector(`#tile-${tileLeft}-${tileTop}`);
+  if (tile !== null) tile.remove();
 }
 
 function resetZoom() {

@@ -12,23 +12,17 @@ body {
 }
 
 button {
-  flex: 1;
-  aspect-ratio: 1;
-  border: 1.5px solid #ffffff44;
+  width: 3rem;
+  height: 3rem;
   border-radius: 3rem;
-  cursor: pointer;
+  border: 1.5px solid #ffffff44;
   background-color: rgba(0, 0, 0, 0.25);
+  cursor: pointer;
 }
 
 button img {
-  height: 2rem;
-  margin: 0.5rem;
-}
-
-button:disabled {
-  filter: opacity(33%);
-  background-color: inherit;
-  cursor: not-allowed;
+  height: 100%;
+  padding: 0.5rem;
 }
 
 button:enabled:active {

@@ -208,24 +208,21 @@ function startMove(e, touch = false) {
 }
 
 function move(e, touch = false) {
-  if (moving) {
-    const newCursorX = touch ? e.touches[0].clientX : e.clientX;
-    const newCursorY = touch ? e.touches[0].clientY : e.clientY;
+  if (!moving) return;
 
-    const moveX = (cursorX - newCursorX) / scale;
-    const moveY = (cursorY - newCursorY) / scale;
+  const newCursorX = touch ? e.touches[0].clientX : e.clientX;
+  const newCursorY = touch ? e.touches[0].clientY : e.clientY;
 
-    imageCenterX = Math.min(Math.max(0, imageCenterX + moveX), levelInfo.width);
-    imageCenterY = Math.min(
-      Math.max(0, imageCenterY + moveY),
-      levelInfo.height,
-    );
+  const moveX = (cursorX - newCursorX) / scale;
+  const moveY = (cursorY - newCursorY) / scale;
 
-    cursorX = newCursorX;
-    cursorY = newCursorY;
+  imageCenterX = Math.min(Math.max(0, imageCenterX + moveX), levelInfo.width);
+  imageCenterY = Math.min(Math.max(0, imageCenterY + moveY), levelInfo.height);
 
-    render();
-  }
+  cursorX = newCursorX;
+  cursorY = newCursorY;
+
+  render();
 }
 
 function endMove() {

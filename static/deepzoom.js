@@ -44,10 +44,7 @@ function init(_uuid, _info) {
   window.addEventListener("touchend", () => endMove());
 
   render();
-  window.addEventListener("resize", () => {
-    resetZoom();
-    render();
-  });
+  window.addEventListener("resize", () => resetZoom());
 }
 
 function render() {

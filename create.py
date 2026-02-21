@@ -53,7 +53,7 @@ def create_deepzoom_image(image_path: str, out_path: str) -> None:
     print_color(f"Size: {img.width}x{img.height}", ANSI_CYAN)
 
     print_color("Generating tiles...", ANSI_CYAN)
-    tiles = get_tiles(img.width, img.height, TILE_SIZE)
+    tiles = get_tiles(img.width, img.height)
     for i, (tile_left, tile_top) in enumerate(tiles):
       print_progress(i, len(tiles))
 
@@ -70,9 +70,9 @@ def create_deepzoom_image(image_path: str, out_path: str) -> None:
 
       tile = img.crop((tile_left, tile_top, tile_right, tile_bottom))
       tile.save(tile_path)
-    print()
 
     info.append({"width": img.width, "height": img.height})
+    print()
 
   print("Writing info.json...")
   info_path = f"{deepzoom_path}/info.json"
@@ -91,11 +91,11 @@ def get_zoom_levels(width: int, height: int) -> list[tuple[int, int]]:
   return zoom_levels
 
 
-def get_tiles(width: int, height: int, tile_size: int) -> list[tuple[int, int]]:
+def get_tiles(width: int, height: int) -> list[tuple[int, int]]:
   return [
     (tile_left, tile_top)
-    for tile_top in range(0, height, tile_size)
-    for tile_left in range(0, width, tile_size)
+    for tile_top in range(0, height, TILE_SIZE)
+    for tile_left in range(0, width, TILE_SIZE)
   ]
 
 

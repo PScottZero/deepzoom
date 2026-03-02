@@ -36,11 +36,11 @@ function init(_uuid, _info) {
   imageCenterY = baseInfo.height / 2;
 
   deepzoom.addEventListener("mousedown", (e) => startMove(e));
-  deepzoom.addEventListener("mousemove", (e) => move(e));
+  window.addEventListener("mousemove", (e) => move(e));
   window.addEventListener("mouseup", () => endMove());
 
   deepzoom.addEventListener("touchstart", (e) => startMove(e, true));
-  deepzoom.addEventListener("touchmove", (e) => move(e, true));
+  window.addEventListener("touchmove", (e) => move(e, true));
   window.addEventListener("touchend", () => endMove());
 
   render();
